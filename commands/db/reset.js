@@ -15,6 +15,6 @@ module.exports = {
 		if(args[0] == 'all') await client.db.empty()
 		if(target) await client.db.delete(target.id)
 
-		console.log(`deleted ${target || 'all'} data`)
+		console.log(`deleted ${target.username || 'all'} data`)
 	}
 }

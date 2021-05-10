@@ -31,7 +31,7 @@ bot.distube = new DisTube(bot, {
 	leaveOnFinish: true 
 })
 
-bot.on('ready', async () => {
+bot.once('ready', async () => {
 
 	// await bot.db.delete('496031546088751135')
 	console.log(await bot.db.getAll())
