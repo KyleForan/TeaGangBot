@@ -31,6 +31,10 @@ module.exports.updateInfo = async (db, userId, newData) => {
 	let data = await db.get(userId)
 	if(!data) dat = setup(db, userId)
 
+	
+
+	if(data.balance + newData.balance < 0) data.balance = 0;
+
 	let {
 		balance = data.balance,
 		daily = data.daily,

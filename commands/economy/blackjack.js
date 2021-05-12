@@ -44,6 +44,7 @@ module.exports = {
 
 		if(isNaN(args[0])) return msg.channel.send('please specify amount')
 		if(!data) data = { balance: 0, daily: null, xpInfo: { xp: 0, level: 1, } }
+		if(args[0] > data.balance) return msg.channel.send('You dont have enough for that bet')
 
 		bot.running.blackjack = true
 
@@ -103,7 +104,8 @@ module.exports = {
 			await economy.updateInfo(bot.db, id, {
 			balance: data.balance,
 			xpInfo: {
-				xp: data.xp + 70
+				xp: data.xp + 70,
+				level: data.level || 1
 			}
 			})
 

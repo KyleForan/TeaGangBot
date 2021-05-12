@@ -2,7 +2,6 @@ const fs = require('fs')
 const path = require('path')
 
 const Discord = require('discord.js');
-const DisTube = require('distube')
 const Database = require('@replit/database')
 
 const roleClaim = require('./roles/role-claim.js');
@@ -25,15 +24,9 @@ bot.commands = new Discord.Collection();
 bot.running = {
 	blackjack: false,
 }
-bot.distube = new DisTube(bot, { 
-	searchSongs: false, 
-	emitNewSongOnly: true, 
-	leaveOnFinish: true 
-})
 
 bot.once('ready', async () => {
 
-	// await bot.db.delete('496031546088751135')
 	console.log(await bot.db.getAll())
 
 	console.log(`Logged in as ${bot.user.tag}.`)

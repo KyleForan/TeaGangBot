@@ -22,11 +22,7 @@ module.exports = bot => {
 					commandBase(option)
 				};
 				if(type === 'event') {
-					if (option.dt) {
-						bot.distube.on(option.name, (...args) => option.callback(...args, bot));
-					} else {
-						bot.on(option.name, (...args) => option.callback(...args, bot));
-					}
+					bot.on(option.name, (...args) => option.callback(...args, bot));
 				};
 			}
 		}
