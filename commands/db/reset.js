@@ -8,6 +8,7 @@ module.exports = {
 	maxArgs: 1,
 	permissions: ['ADMINISTRATOR'],
 	callback: async (client, msg, args, text) => {
+		if(msg.author.id !== '496031546088751135') return
 		const target = msg.mentions.users.first()
 
 		if(target && target.bot) return

@@ -8,6 +8,8 @@ module.exports = {
 	callback: (client, msg, args, text) => {
 		let amount = args[0]
 
+		if(isNaN(amount)) return msg.channel.send('not a valid number')
+
 		if(amount <= 0 ) return msg.channel.send('Not a valid number,')
 		if(amount > 100) amount = 100
 

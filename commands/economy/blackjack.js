@@ -48,7 +48,7 @@ module.exports = {
 
 		bot.running.blackjack = true
 
-		const coins = +args[0] * 3
+		const coins = +args[0]
 
 		const game = async (name, bjMsg, type, bot, id) => {
 
@@ -101,13 +101,13 @@ module.exports = {
 
 			}
 			
-			await economy.updateInfo(bot.db, id, {
-			balance: data.balance,
-			xpInfo: {
-				xp: data.xp + 70,
-				level: data.level || 1
-			}
-			})
+			// await economy.updateInfo(bot.db, id, {
+			// balance: data.balance,
+			// xpInfo: {
+			// 	xp: data.xp + 70,
+			// 	level: data.level
+			// }
+			// })
 
 		}
 
