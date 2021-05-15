@@ -9,7 +9,7 @@ module.exports = {
 	permissions: 'ADMINISTRATOR',
 	callback: async (bot, msg, args) => {
 		const target = msg.mentions.users.first()
-		if(!target || target.bot || (target.id == '496780359598604328')) return msg.channel.send('please mention a valid user')
+		if(!target || target.bot) return msg.channel.send('please mention a valid user')
 
 		const coins = args[1]
 		if(isNaN(coins)) return msg.channel.send('please specify amount')

@@ -2,7 +2,6 @@ const economy = require('../../economy')
 
 module.exports = {
 	commands: ['pay'],
-	admin: true,
 	minArgs: 2,
 	maxArgs: 2,
 	expectedArgs: '<target user> <amount>',
@@ -15,6 +14,8 @@ module.exports = {
 
 		const creditorData = await economy.getInfo(bot.db, target.id)
 		const debtorData = await economy.getInfo(bot.db, msg.author.id)
+
+		if(debtorData.balance < coins) return msg.channel.send('You dont have enough')
 
 		creditorData.balance += +coins
 		debtorData.balance -= +coins

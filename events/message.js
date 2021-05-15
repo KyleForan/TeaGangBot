@@ -10,19 +10,6 @@ module.exports = {
 		if(msg.author.bot) return;
 		if (!msg.content.startsWith(prefix)) await addXP(client.db, msg)
 
-
-
-
-
-		const channelIds = ['840316569116082227']
-
-		if(channelIds.includes(msg.channel.id)){
-			msg.react('👍')
-			setTimeout(() => {
-				msg.react('👎')
-			}, 750)
-		}
-		
 	}
 }
 
@@ -38,7 +25,6 @@ let addXP = async (db, msg) => {
 	if(levelup < xp) {
 		++level
 		xp -= levelup
-		msg.reply(`You ranked up to level ${level}`)
 	}
 
 	await economy.updateInfo(db, member.id, { xpInfo: { xp: xp, level: level, } })
