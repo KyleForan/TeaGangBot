@@ -13,7 +13,7 @@ module.exports = {
 		msg.channel.createWebhook(target.displayName, {
 			avatar: target.user.avatarURL(),
 		})
-			.then(async webhook => {=
+			.then(async webhook => {
 				await webhook.send(list[random])
 				await webhook.delete()
 			})

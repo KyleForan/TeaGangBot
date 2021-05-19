@@ -1,20 +1,20 @@
 const { MessageEmbed } = require('discord.js')
+const Database = require('better-sqlite3')
+let db = new Database('./TeaGang.db', { fileMustExist: true } ) // verbose: console.log, 
 
 module.exports = {
 	commands: ['richleaderboard', 'rleader', 'rl'],
 	maxArgs: 0,
-	callback: async (client, msg, args, text) => {
+	callback: (client, msg, args, text) => {
 		
-		const info = await client.db.getAll()
+		let query = db.prepare('SELECT * FROM data')
 
-		if(!info) return msg.channel.send('No data stored for this server')
-
-		const array = Object.entries(info)
+		const array = query.all()
 
         array.sort((a, b) => {
-			if (a[1].balance > b[1].balance) {
+			if (a.balance > b.balance) {
 					return -1
-				} else if (a[1].balance < b[1].balance) {
+				} else if (a.balance < b.balance) {
 					return 1
 				} else {
 					return 0
@@ -25,16 +25,13 @@ module.exports = {
 		let num = 0;
 
         for(const data of array) {
-			const member = msg.guild.members.cache.find(m => m.id == data[0])
-			const { xp, level } = data[1].xpInfo
-			let embedValue
+			const member = msg.guild.members.cache.find(m => m.id == data.userid)
 
 			if(++num > 5) break;
 
-
 			fields.push({
 				name: `${num}. ${member.displayName}`,
-				value: `balance: ${data[1].balance}`
+				value: `balance: ${data.balance}`
 			})
 		}
 

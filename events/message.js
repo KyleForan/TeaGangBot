@@ -8,24 +8,25 @@ module.exports = {
 	callback: async (msg, client) => {
 
 		if(msg.author.bot) return;
-		if (!msg.content.startsWith(prefix)) await addXP(client.db, msg)
+		if (!msg.content.startsWith(prefix)) await addXP(msg.author.id, client)
 
 	}
 }
 
-let addXP = async (db, msg) => {
-	const { member } = msg
-	let info = await economy.getInfo(db, msg.author.id)
+let addXP = (userId, bot) => {
+	let info = economy.getInfo(userId)
 	
-	let { xp, level } = info.xpInfo
+	// console.log('xp', info)
+
+	let { xp, level } = info
 	const levelup = neededXp(level)
 
 	xp += randomNum()
 
 	if(levelup < xp) {
-		++level
+		level -= -!false
 		xp -= levelup
 	}
 
-	await economy.updateInfo(db, member.id, { xpInfo: { xp: xp, level: level, } })
+	economy.updateInfo(userId, { xp: xp, level: level }, bot)
 }

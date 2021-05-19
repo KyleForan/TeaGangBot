@@ -33,11 +33,12 @@ const game = async (bot, msg, args) => {
 
 	const bjChannel =  msg.guild.channels.cache.find(ch => ch.name == bjName)
 	const values = [randomNum(), randomNum()]
-	let data = await economy.getInfo(bot.db, msg.author.id)
+	let data = economy.getInfo(msg.author.id)
 
 	if(isNaN(args[0]) || args[0] % 1 != 0) return msg.channel.send('please specify amount')
 	if(!data) data = { balance: 0, daily: null, xpInfo: { xp: 0, level: 1, } }
 	if(args[0] > data.balance) return msg.channel.send('You dont have enough for that bet')
+	if(args[0] > 1000000) return msg.channel.send('Max bet is 1,000,000')
 
 
 	const coins = +args[0]
@@ -46,7 +47,7 @@ const game = async (bot, msg, args) => {
 	bot.running.blackjack = true
 
 
-	const game = async (name, bjMsg, type, bot, id) => {
+	const game = (name, bjMsg, type, bot, id) => {
 
 		let total = valCalc(values)
 
@@ -64,8 +65,8 @@ const game = async (bot, msg, args) => {
 				bjMsg.edit(`**welcome ${name}**\n*Your hand: ${hand.join(', ')}*\n*Value: ${total}*`)
 
 			} else if (total == 21) {
-				bjMsg.edit(`Congratulations your total is 21.\nYou won ${Math.ceil(coins * 1.5)}`)
-				data.balance += Math.ceil(coins * 1.5)
+				bjMsg.edit(`Congratulations your total is 21.\nYou won ${coins}`)
+				data.balance += coins
 				gameEnd(bot, bjMsg)
 
 			} else {
@@ -82,32 +83,27 @@ const game = async (bot, msg, args) => {
 				data.balance += coins
 				gameEnd(bot, bjMsg)
 
-			} else if (compTotal > total) {
+			} else {
 				// comp wins
 				bjMsg.edit(`${name} has lost.\nYou lost ${coins}`)
 				data.balance += (coins * -1)
 				gameEnd(bot, bjMsg)
 
-			} else if (compTotal == total) {
-				// draw
-				bjMsg.edit(`it's a draw.\nYou got ${args[0]} back`)
-				gameEnd(bot, bjMsg)
-
-			} 	
+			}	
 
 		}
 		
-		await economy.updateInfo(bot.db, id, {
+		economy.updateInfo(id, {
 			balance: data.balance,
-		})
+		}, bot)
 
 	}
 
 	const bjMsg = await bjChannel.send(`${msg.member.displayName} welcome.\nstarting game...`)
 
-	await game(msg.member.displayName, bjMsg, 'hit', bot, msg.member.id)
+	game(msg.member.displayName, bjMsg, 'hit', bot, msg.member.id)
 
-	const onReact = async (msgReact, user) => {
+	const onReact = (msgReact, user) => {
 		if(user.id == '837780527015919678') return;
 		
 		const reacts = msgReact.message.reactions
@@ -120,11 +116,11 @@ const game = async (bot, msg, args) => {
 			if(msgReact.emoji.name == 'Hit'){
 
 				values.push(randomNum())
-				await game(msg.member.displayName, bjMsg, 'hit', bot, msg.member.id)
+				game(msg.member.displayName, bjMsg, 'hit', bot, msg.member.id)
 
 			} else if (msgReact.emoji.name == 'Hold') {
 
-				await game(msg.member.displayName, bjMsg, 'hold', bot, msg.member.id)
+				game(msg.member.displayName, bjMsg, 'hold', bot, msg.member.id)
 
 			}
 		}
@@ -144,7 +140,7 @@ module.exports = {
 	minArgs: 1,
 	maxArgs: 1,
 	expectedArgs: '<bet>',
-	callback: async (bot, msg, args, text) => {
+	callback: (bot, msg, args, text) => {
 
 		// msg.channel.send('Blackjack disbled for now.')
 

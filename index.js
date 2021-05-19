@@ -1,40 +1,35 @@
-const fs = require('fs')
-const path = require('path')
-
 const Discord = require('discord.js');
-const Database = require('@replit/database')
-const economy = require ('./economy')
 
 const roleClaim = require('./roles/role-claim.js');
 const setup = require('./setup.js')
-const { prefix } = require('./config')
+const { prefix, token } = require('./config')
+
 
 let bot = new Discord.Client({
 	 intents: Discord.Intents.All ,
 	 presence: {
-    	status: 'dnd',
+    	status: 'online',
     	activity: {
       		name: `${prefix}help for commands`,
-			type: 3,
+			type: 2,
 		}
     }
 });
 
-bot.db = new Database()
-bot.commands = new Discord.Collection();
 bot.running = {
-	blackjack: false,
+	blackjack: false
 }
 
-bot.once('ready', async () => {
+
+bot.once('ready', () => {
 
 
 	console.log(`Logged in as ${bot.user.tag}.`)
 
-	roleClaim(bot)
+
+	// roleClaim(bot)
 	setup(bot)
 
 });
 
-require('./server')();
-bot.login(process.env.TOKEN);
+bot.login(token);
