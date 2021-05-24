@@ -32,10 +32,12 @@ module.exports = {
 		let num = 0;
 
 		for(const element of array) {
+			if(++num > 5) break;
+
 			let name = msg.guild.members.cache.find(m => m.id == element.userid)
 
 			fields.push({
-				name: `**${++num}**: ${name.displayName}`,
+				name: `**${num}**: ${name.displayName}`,
 				value: `**levels**: _${element.level}_, **xp**: _${element.xp}_`,
 			})
 		}

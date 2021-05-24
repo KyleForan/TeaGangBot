@@ -20,7 +20,7 @@ module.exports.getInfo = (userId) => {
 		
 }
 
-module.exports.updateInfo = (userId, newData, bot) => {
+module.exports.updateInfo = (userId, newData, msg) => {
 
 	if(!newData) return console.log('No data given')
 
@@ -36,17 +36,17 @@ module.exports.updateInfo = (userId, newData, bot) => {
 		xp = data.xp
 	} = newData
 
+	if(msg) {
 
-	// const user = bot.users.cache.find(g => g.id === userId)
-	// const guild = user.guilds.cache.find(g => g.id === '818937983348637776')
-	// const role = guild.roles.cache.find(g => g.name === 'RICHBOI')
-	// console.log(user)
+		let { guild, author } = msg
+		let role = guild.roles.cache.find(g => g.name === 'RICHBOI')
+		let member = guild.members.cache.find(m => m.id === author.id)
 
-	// console.log(guild.name, role.name, user.name)
-
-	if(balance > 1000000) {
-
-	} else {
+		if (balance > 500000) {
+			member.roles.add(role)
+		} else {
+			member.roles.remove(role)
+		}
 
 	}
 

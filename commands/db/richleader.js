@@ -25,9 +25,9 @@ module.exports = {
 		let num = 0;
 
         for(const data of array) {
-			const member = msg.guild.members.cache.find(m => m.id == data.userid)
-
 			if(++num > 5) break;
+
+			const member = msg.guild.members.cache.find(m => m.id == data.userid)
 
 			fields.push({
 				name: `${num}. ${member.displayName}`,

@@ -1,136 +1,196 @@
 const economy = require('../../economy')
-let bjName = 'blackjack'
-const face = ['Ace', 'Jack','Queen','King']
 
-const randomNum = () => Math.floor(Math.random() * 13) + 1
 const getEmoji = (emojiName, bot) => bot.emojis.cache.find(emoji => emoji.name === emojiName)
-const faceCheck = val => {
-	if(val > 10) return face[val-10]
-	if(val == 1) return face[0]
-	return val
-}
-const valCalc = (vals) => {
-	let total = 0
+var suits = ["Spades", "Hearts", "Diamonds", "Clubs"];
+const suitEmoji = {Spades: '♠️', Hearts: '♥️', Diamonds: '♦️', Clubs: '♣️'}
+var values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+var deck = []
 
-	for(const value of vals) {
-		if (value > 10) total += 10
-		if (value > 1 && value < 11) total += value
-		if (value == 1) total += (total + 11 > 21) ? 1 : 11
-	}
-	return total
-}
-const gameEnd = (bot, message) => {
-	bot.running.blackjack = false
+const finish = (msg, botMsg) => {
+	
 	setTimeout(() => {
-		if(!message) return
-		message.delete()
-	}, 5000)
+		botMsg.delete()
+		msg.delete()
+	}, 7000)
+
+}
+
+const aceCheck = (hand, total) => {
+
+	for(card of hand) if(card.Value === 'A') {
+		total -= 10
+		card.weight -= 10
+		if(total <= 21) return 1
+	}
+	
+	return 0
+	
+}
+
+const shuffle = () => {
+
+	for (var i = 0; i < 1000; i++) {
+
+		var card1 = Math.floor((Math.random() * deck.length));
+		var card2 = Math.floor((Math.random() * deck.length));
+		var tmp = deck[card1];
+
+		deck[card1] = deck[card2];
+		deck[card2] = tmp;
+	}
+
+}
+
+const createDeck = () => {
+	for (const face of values) {
+		for(const type of suits) {
+			var weight = parseInt(face);
+
+			if (['K', 'Q', 'J'].includes(face)) weight = 10;
+			if (face == "A") weight = 11;
+
+			var card = { Value: face, Suit: type, Weight: weight };
+			deck.push(card);
+		}
+	}
+
+	shuffle()
+
+	console.log('Deck Created')
+}
+
+createDeck();
+
+const deal = () => {
+
+	if(deck.length == 0) {
+		createDeck()
+	}
+
+	return deck.pop()
+
+}
+
+const display = (hand) => {
+	
+	const display = [];
+	
+	for (card of hand) display.push(`${suitEmoji[card.Suit]}${card.Value}`)
+
+	return display.join(', ')
+}
+
+const hold = (ogMsg, botMsg, hand, total, data) => {
+
+	
+	if(total > 21 && !aceCheck(hand, total)) {
+		
+		botMsg.edit('You lose')
+		finish(ogMsg, botMsg)
+		return
+
+	} else {
+
+		let compHand = [deal(), deal()], run = 1
+
+		while(run) {
+			let compTotal = 0;
+			for(card of compHand) compTotal += card.Weight
+
+			if(compTotal >= total && compTotal <= 21) {
+
+				botMsg.edit(`You lost ${data.coins}\nYour hand: ${display(hand)}\nDealer's hand: ${display(compHand)}`)
+				finish(ogMsg, botMsg)
+				economy.updateInfo(ogMsg.author.id, {balance: data.balance + data.coins * -1}, ogMsg)
+				run = 0
+
+			} else if (compTotal <= 14) {
+				
+				compHand.push(deal())
+				continue;
+
+			} else {
+				
+				botMsg.edit(`You won ${data.coins}\nYour hand: ${display(hand)}\nDealer's hand: ${display(compHand)}`)
+				finish(ogMsg, botMsg)
+				economy.updateInfo(ogMsg.author.id, {balance: data.balance + data.coins}, ogMsg)
+				run = 0
+
+			}
+		}
+
+	}
+
+}
+
+const playerMove = (bot, ogMsg, botMsg, hand, data) => {
+
+	let total = 0;
+	for(card of hand) total += card.Weight
+
+	if((total > 21 && !aceCheck(hand, total))) {
+		
+		botMsg.edit(`You lost ${data.coins}\nYour hand: ${display(hand)}`)
+		economy.updateInfo(ogMsg.author.id, {balance: data.balance + data.coins * -1}, ogMsg)
+		finish(ogMsg, botMsg)
+		return
+
+	} else if (total === 21) {
+
+		botMsg.edit(`You won ${data.coins}\nYour hand: ${display(hand)}`)
+		finish(ogMsg, botMsg)
+		economy.updateInfo(ogMsg.author.id, {balance: data.balance + data.coins}, ogMsg)
+		return 
+
+	}
+
+
+	bot.once('messageReactionAdd', (msgReact, user) => {		
+		if(!user.bot) msgReact.users.remove(user)
+
+		if(user.id !== ogMsg.author.id || msgReact.message.id !== botMsg.id) return playerMove(bot, ogMsg, botMsg, hand, data)
+		
+
+		if(msgReact.emoji.name === 'Hit') {
+			hand.push(deal())
+			botMsg.edit(`${ogMsg.author} Your hand:\n${display(hand)}`)
+			playerMove(bot, ogMsg, botMsg, hand, data)
+		} else if(msgReact.emoji.name === 'Hold') {
+			hold(ogMsg, botMsg, hand, total, data)
+		} else return playerMove(bot, ogMsg, botMsg, hand, data)
+
+	})
+
 }
 
 
-const game = async (bot, msg, args) => {
-	if (bot.running.blackjack == true) return msg.reply('Game is already running please wait')
+const setup = async (bot, msg, args) => {
 
-	const bjChannel =  msg.guild.channels.cache.find(ch => ch.name == bjName)
-	const values = [randomNum(), randomNum()]
-	let data = economy.getInfo(msg.author.id)
+	const { balance } = economy.getInfo(msg.author.id)
 
-	if(isNaN(args[0]) || args[0] % 1 != 0) return msg.channel.send('please specify amount')
-	if(!data) data = { balance: 0, daily: null, xpInfo: { xp: 0, level: 1, } }
-	if(args[0] > data.balance) return msg.channel.send('You dont have enough for that bet')
-	if(args[0] > 1000000) return msg.channel.send('Max bet is 1,000,000')
-
+	if(!args[0] || isNaN(args[0]) || args[0] < 0 || args[0] > 1000000) return msg.channel.send('Please enter a valid bet.')
+	if(args[0] > balance) return msg.channel.send('You dont have enough money to make that bet.')
 
 	const coins = +args[0]
 
-	if(isNaN(coins) || coins < 0) return msg.channel.send('please specify amount')
-	bot.running.blackjack = true
+	const channel = msg.guild.channels.cache.find(ch => ch.name.toLowerCase() === 'blackjack')	
+	const botMsg = await channel.send('Starting...')
 
+	const hand = [deal(), deal()]
 
-	const game = (name, bjMsg, type, bot, id) => {
-
-		let total = valCalc(values)
-
-		if (type == 'hit') {
-			if(total < 21) {
-				hand = []
-
-				for (value of values) hand.push(faceCheck(value))
-				
-				bjMsg.react(getEmoji('Hit', bot))
-				setTimeout(() => {
-					bjMsg.react(getEmoji('Hold', bot))
-				}, 750)
-
-				bjMsg.edit(`**welcome ${name}**\n*Your hand: ${hand.join(', ')}*\n*Value: ${total}*`)
-
-			} else if (total == 21) {
-				bjMsg.edit(`Congratulations your total is 21.\nYou won ${coins}`)
-				data.balance += coins
-				gameEnd(bot, bjMsg)
-
-			} else {
-				bjMsg.edit(`${name} has gone bust.\nYou lost ${coins}`)
-				data.balance += (coins * -1)
-				gameEnd(bot, bjMsg)
-			}
-		} else if (type == 'hold') {
-			let compTotal = valCalc([randomNum(), randomNum()])
-			
-			if(compTotal > 21 || compTotal < total) {
-				// play win
-				bjMsg.edit(`${name} has won.\nYou won ${coins}`)
-				data.balance += coins
-				gameEnd(bot, bjMsg)
-
-			} else {
-				// comp wins
-				bjMsg.edit(`${name} has lost.\nYou lost ${coins}`)
-				data.balance += (coins * -1)
-				gameEnd(bot, bjMsg)
-
-			}	
-
-		}
 		
-		economy.updateInfo(id, {
-			balance: data.balance,
-		}, bot)
+	botMsg.edit(`${msg.author} Your hand:\n${display(hand)}`)
 
-	}
+	botMsg.react(getEmoji('Hit', bot))
+	setTimeout(() => {
+		botMsg.react(getEmoji('Hold', bot))
+	}, 500)
 
-	const bjMsg = await bjChannel.send(`${msg.member.displayName} welcome.\nstarting game...`)
+	playerMove(bot, msg, botMsg, hand, {coins: coins, balance: balance})
 
-	game(msg.member.displayName, bjMsg, 'hit', bot, msg.member.id)
 
-	const onReact = (msgReact, user) => {
-		if(user.id == '837780527015919678') return;
-		
-		const reacts = msgReact.message.reactions
-
-		if(user.id != msg.author.id) reacts.cache.find(react => react.emoji == msgReact.emoji).users.remove(user)
-		if(user.id == msg.author.id) {
-			reacts.removeAll()
-
-			// hit
-			if(msgReact.emoji.name == 'Hit'){
-
-				values.push(randomNum())
-				game(msg.member.displayName, bjMsg, 'hit', bot, msg.member.id)
-
-			} else if (msgReact.emoji.name == 'Hold') {
-
-				game(msg.member.displayName, bjMsg, 'hold', bot, msg.member.id)
-
-			}
-		}
-
-		if (bot.running.blackjack == false) bot.removeListener('messageReactionAdd', onReact);
-
-	}
-
-	bot.on('messageReactionAdd', onReact)
 }
+
 
 
 
@@ -142,10 +202,8 @@ module.exports = {
 	expectedArgs: '<bet>',
 	callback: (bot, msg, args, text) => {
 
-		// msg.channel.send('Blackjack disbled for now.')
-
-
-		game(bot,msg,args)
+		setup(bot, msg, args)
+		
 		
 	}
 }

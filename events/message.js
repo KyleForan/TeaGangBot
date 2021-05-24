@@ -8,12 +8,12 @@ module.exports = {
 	callback: async (msg, client) => {
 
 		if(msg.author.bot) return;
-		if (!msg.content.startsWith(prefix)) await addXP(msg.author.id, client)
+		if (!msg.content.startsWith(prefix)) await addXP(msg.author.id, msg)
 
 	}
 }
 
-let addXP = (userId, bot) => {
+let addXP = (userId, msg) => {
 	let info = economy.getInfo(userId)
 	
 	// console.log('xp', info)
@@ -28,5 +28,5 @@ let addXP = (userId, bot) => {
 		xp -= levelup
 	}
 
-	economy.updateInfo(userId, { xp: xp, level: level }, bot)
+	economy.updateInfo(userId, { xp: xp, level: level }, msg)
 }
