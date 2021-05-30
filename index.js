@@ -16,9 +16,8 @@ let bot = new Discord.Client({
     }
 });
 
-bot.running = {
-	blackjack: false
-}
+require('discord-buttons')(bot); //Starting the discord-buttons class
+
 
 
 bot.once('ready', () => {

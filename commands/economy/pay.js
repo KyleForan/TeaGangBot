@@ -20,8 +20,8 @@ module.exports = {
 		creditorData.balance += +coins
 		debtorData.balance -= +coins
 
-		economy.updateInfo(target.id, { balance: creditorData.balance }, bot)
-		economy.updateInfo(msg.author.id,{ balance: debtorData.balance }, bot)
+		economy.updateInfo(target.id, { balance: creditorData.balance }, msg)
+		economy.updateInfo(msg.author.id,{ balance: debtorData.balance }, msg)
 		msg.channel.send(`payed ${coins} to ${target} `)
 	}
 }

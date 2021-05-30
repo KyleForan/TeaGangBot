@@ -4,9 +4,8 @@ let db = new Database('./TeaGang.db', { fileMustExist: true } ) // verbose: cons
 let setup = (userId) => {
 	
 	db.prepare('INSERT INTO data (userid) VALUES(?)').run(userId)
-	console.log('setup')
 
-	return { userid: userId, balance: 50, daily: null, level: 1, xp: 0 };
+	return { userid: userId, balance: 50, daily: null, level: 1, xp: 0, debt: null, creditor: null, interest: 1.5 };
 
 }
 
@@ -33,7 +32,10 @@ module.exports.updateInfo = (userId, newData, msg) => {
 		balance= data.balance,
 		daily= data.daily,
 		level= data.level,
-		xp = data.xp
+		xp = data.xp,
+		debt = data.debt,
+		creditor = data.creditor,
+		interest = data.interest
 	} = newData
 
 	if(msg) {
@@ -50,7 +52,54 @@ module.exports.updateInfo = (userId, newData, msg) => {
 
 	}
 
-	query = db.prepare('UPDATE data SET balance = ?, daily = ?, level = ?, xp = ? WHERE userid = ?')
-	query.run(balance, daily, level, xp, userId)
+	if((debt !== null && creditor !== null) && debt * (4/3) < balance) {
+		
+		msg.channel.send('Your debts are payed.')
+
+		query = db.prepare('UPDATE data SET balance = balance + ? WHERE userid = ?')
+		query.run(debt, creditor)
+
+		balance -= debt;
+		creditor = debt = null
+
+	}
+
 	
+
+
+	query = db.prepare('UPDATE data SET balance = ?, daily = ?, level = ?, xp = ?, debt = ?, creditor = ?, interest = ? WHERE userid = ?')
+	query.run(balance, daily, level, xp, debt, creditor, interest, userId)
+	
+}
+
+module.exports.bjRunning = (userId, check) => {
+
+	let query = db.prepare('SELECT * FROM blackjack WHERE userid = ?')
+	let row = query.get(userId)
+
+	if (row === undefined) {
+
+		db.prepare('INSERT INTO blackjack (userid) VALUES(?)').run(userId)
+
+		row = {userid: userId, running: 0, number: 0}
+	}
+
+	let {number, running} = row
+
+	if (check) {
+		if(running === 0) {
+			running = 1
+		} else {
+			return 0
+		}
+	} else {
+		running = 0
+		number++
+	}
+
+	query = db.prepare('UPDATE blackjack SET running = ?, number = ? WHERE userid = ?')
+	query.run(running, number, userId)
+
+	return running
+
 }

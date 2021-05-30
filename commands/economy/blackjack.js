@@ -7,12 +7,13 @@ var values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
 var deck = []
 
 const finish = (msg, botMsg) => {
-	
+	botMsg.reactions.removeAll()
 	setTimeout(() => {
 		botMsg.delete()
 		msg.delete()
 	}, 7000)
 
+	economy.bjRunning(msg.author.id, 0)
 }
 
 const aceCheck = (hand, total) => {
@@ -103,6 +104,7 @@ const hold = (ogMsg, botMsg, hand, total, data) => {
 				finish(ogMsg, botMsg)
 				economy.updateInfo(ogMsg.author.id, {balance: data.balance + data.coins * -1}, ogMsg)
 				run = 0
+				return
 
 			} else if (compTotal <= 14) {
 				
@@ -115,7 +117,7 @@ const hold = (ogMsg, botMsg, hand, total, data) => {
 				finish(ogMsg, botMsg)
 				economy.updateInfo(ogMsg.author.id, {balance: data.balance + data.coins}, ogMsg)
 				run = 0
-
+				return
 			}
 		}
 
@@ -156,7 +158,7 @@ const playerMove = (bot, ogMsg, botMsg, hand, data) => {
 			botMsg.edit(`${ogMsg.author} Your hand:\n${display(hand)}`)
 			playerMove(bot, ogMsg, botMsg, hand, data)
 		} else if(msgReact.emoji.name === 'Hold') {
-			hold(ogMsg, botMsg, hand, total, data)
+			return hold(ogMsg, botMsg, hand, total, data)
 		} else return playerMove(bot, ogMsg, botMsg, hand, data)
 
 	})
@@ -172,6 +174,9 @@ const setup = async (bot, msg, args) => {
 	if(args[0] > balance) return msg.channel.send('You dont have enough money to make that bet.')
 
 	const coins = +args[0]
+
+	if(economy.bjRunning(msg.author.id, 1) === 0) return msg.reply('you already have a game running.')
+
 
 	const channel = msg.guild.channels.cache.find(ch => ch.name.toLowerCase() === 'blackjack')	
 	const botMsg = await channel.send('Starting...')
@@ -202,8 +207,8 @@ module.exports = {
 	expectedArgs: '<bet>',
 	callback: (bot, msg, args, text) => {
 
-		setup(bot, msg, args)
-		
+		return setup(bot, msg, args)
+
 		
 	}
 }
