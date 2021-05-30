@@ -26,7 +26,7 @@ bot.once('ready', () => {
 	console.log(`Logged in as ${bot.user.tag}.`)
 
 
-	// roleClaim(bot)
+	roleClaim(bot)
 	setup(bot)
 
 });
