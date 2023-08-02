@@ -8,7 +8,7 @@ module.exports = {
 	callback: async (msg, client) => {
 
 		if(msg.author.bot) return;
-		if (!msg.content.startsWith(prefix)) await addXP(client.db, msg)
+		// if (!msg.content.startsWith(prefix)) await addXP(client.db, msg)
 
 	}
 }

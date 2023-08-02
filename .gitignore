@@ -1,1 +1,4 @@
-commands/debug.js
+.gitignore
+
+node_modules/
+disabledCommands/

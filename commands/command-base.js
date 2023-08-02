@@ -58,7 +58,7 @@ module.exports.listen = client => {
 
 		if(name.startsWith(prefix)) {
 			const command = allcommands[name.replace(prefix, '')]
-			// console.log(command)
+			console.log(command)
 			if(!command) return
 		
 

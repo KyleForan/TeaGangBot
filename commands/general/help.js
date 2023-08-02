@@ -5,6 +5,8 @@ module.exports = {
 	commands: ['help', 'h'],
 	maxArgs: 0,
 	callback: (bot, msg, args) => {
+
+		// console.log("Help Command Run.\n")
 		
 		let fields = []
 

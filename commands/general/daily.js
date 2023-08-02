@@ -1,5 +1,5 @@
 const economy = require('../../economy')
-const cooldown = 1000 * 60 * 60 * 24
+const cooldown = 1000 * 60 * 60 * 6 // Every 6 hours
 
 module.exports = {
 	commands: ['daily'],

@@ -12,15 +12,16 @@ const { prefix } = require('./config')
 let bot = new Discord.Client({
 	 intents: Discord.Intents.All ,
 	 presence: {
-    	status: 'dnd',
+    	status: 'idle',
     	activity: {
-      		name: `${prefix}help for commands`,
-			type: 3,
+      		name: `commands disabled`,
+			type: 2,
 		}
     }
+	
 });
 
-bot.db = new Database()
+bot.db = require("./tempDB.json")
 bot.commands = new Discord.Collection();
 bot.running = {
 	blackjack: false,
@@ -28,13 +29,16 @@ bot.running = {
 
 bot.once('ready', async () => {
 
+	// console.log(await bot.db.getAll())
+
 
 	console.log(`Logged in as ${bot.user.tag}.`)
 
-	roleClaim(bot)
+	// roleClaim(bot)
+	
 	setup(bot)
 
 });
 
-require('./server')();
-bot.login(process.env.TOKEN);
+// require('./server')();
+bot.login("ODQ4OTk5NjAxNTgzNTU0NjQx.YLUyfg.Q8gqr2vt3IdpzAerUzJ9SWhHy7M");

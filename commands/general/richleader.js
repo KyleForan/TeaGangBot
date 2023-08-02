@@ -1,11 +1,13 @@
 const { MessageEmbed } = require('discord.js')
+const economy = require("../../economy")
 
 module.exports = {
 	commands: ['richleaderboard', 'rleader', 'rl'],
 	maxArgs: 0,
 	callback: async (client, msg, args, text) => {
 		
-		const info = await client.db.getAll()
+		// ! VERY TEMP
+		const info = client.db
 
 		if(!info) return msg.channel.send('No data stored for this server')
 
@@ -13,28 +15,38 @@ module.exports = {
 
         array.sort((a, b) => {
 			if (a[1].balance > b[1].balance) {
-					return -1
-				} else if (a[1].balance < b[1].balance) {
-					return 1
-				} else {
-					return 0
-				}
+				return -1
+			} else if (a[1].balance < b[1].balance) {
+				return 1
+			} else {
+				return 0
+			}
         })
-
+		
 		let fields = []
 		let num = 0;
 
-        for(const data of array) {
-			const member = msg.guild.members.cache.find(m => m.id == data[0])
-			const { xp, level } = data[1].xpInfo
-			let embedValue
+        for(const entry of array) {
+
+			console.log(entry)
+
+			// continue
+
+			const id = entry[0]
+			const data = entry[1]
+
+			console.log(id, data)
+
+			const member = msg.guild.members.cache.find(m => m.id == id)
+			const { xp, level } = data.xpInfo
 
 			if(++num > 5) break;
+			// if (!member) break;
 
 
 			fields.push({
-				name: `${num}. ${member.displayName}`,
-				value: `balance: ${data[1].balance}`
+				name: `${num}. ${member?.displayName || "N/A"}`,
+				value: `balance: ${data.balance}`
 			})
 		}
 
