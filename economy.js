@@ -1,9 +1,21 @@
+const fs = require("fs")
+const dbPath = "./tempDB.json"
+
+console.log(require(dbPath))
 
 module.exports = (client) => {
 	/* */
 }
 
+const writeFile = (db) => {
+    fs.writeFile(dbPath, JSON.stringify(db, null, 2), (err) => {
+        if (err) return console.log(err)
+        else console.log("Success!", db)
+    })
+}
+
 let setup = async (db, userId) => {
+
 	const template = {
 		balance: 0,
 		daily: null,
@@ -12,24 +24,26 @@ let setup = async (db, userId) => {
 			level: 1
 		}
 	}
+	db[userId] = template
 
-	await db.set(userId, template)
-
+	writeFile(db)
+	
 	return template
 }
 
 module.exports.getInfo = async (db, userId) => {
-
-	let data = await db.get(userId)
+	
+	let data = db[userId]
 	if(!data) data = setup(db, userId)
 	
 	return data
+
 }
 
 module.exports.updateInfo = async (db, userId, newData) => {
 
-	let data = await db.get(userId)
-	if(!data) dat = setup(db, userId)
+	let data = await db[userId]
+	if(!data) data = setup(db, userId)
 
 	
 
@@ -42,5 +56,7 @@ module.exports.updateInfo = async (db, userId, newData) => {
 	} = newData
 
 	
-	await db.set(userId, { balance, daily, xpInfo })
+	db[userId] = { balance, daily, xpInfo }
+
+	writeFile(db)
 }
