@@ -39,8 +39,6 @@ const game = async (bot, msg, args) => {
 	if(!data) data = { balance: 0, daily: null, xpInfo: { xp: 0, level: 1, } }
 	if(args[0] > data.balance) return msg.channel.send('You dont have enough for that bet')
 
-	console.log(bjChannel)
-
 
 	const coins = +args[0]
 
@@ -110,7 +108,7 @@ const game = async (bot, msg, args) => {
 	await game(msg.member.displayName, bjMsg, 'hit', bot, msg.member.id)
 
 	const onReact = async (msgReact, user) => {
-		if(user.id == '837780527015919678') return;
+		if(user.bot) return;
 		
 		const reacts = msgReact.message.reactions
 

@@ -5,16 +5,26 @@ console.log(require(dbPath))
 
 module.exports = (client) => {
 	/* */
+	return
 }
 
 const writeFile = (db) => {
     fs.writeFile(dbPath, JSON.stringify(db, null, 2), (err) => {
         if (err) return console.log(err)
-        else console.log("Success!", db)
+        else console.log("Success!")
     })
+
+	return
 }
 
-let setup = async (db, userId) => {
+const getData = (db, userId) => {
+	let data = db[userId]
+	if(!data) data = setup(db, userId)
+
+	return data
+}
+
+let setup = (db, userId) => {
 
 	const template = {
 		balance: 0,
@@ -31,23 +41,17 @@ let setup = async (db, userId) => {
 	return template
 }
 
-module.exports.getInfo = async (db, userId) => {
+module.exports.getInfo = (db, userId) => {
 	
-	let data = db[userId]
-	if(!data) data = setup(db, userId)
-	
-	return data
+	return getData(db, userId)
 
 }
 
-module.exports.updateInfo = async (db, userId, newData) => {
+module.exports.updateInfo = (db, userId, newData) => {
 
-	let data = await db[userId]
-	if(!data) data = setup(db, userId)
+	const data = getData(db, userId)
 
-	
-
-	if(data.balance + newData.balance < 0) data.balance = 0;
+	if(newData.balance < 0) data.balance = 0;
 
 	let {
 		balance = data.balance,
@@ -59,4 +63,29 @@ module.exports.updateInfo = async (db, userId, newData) => {
 	db[userId] = { balance, daily, xpInfo }
 
 	writeFile(db)
+
+	return
+}
+
+module.exports.changeBal = (db, userId, change) => {
+
+	const data = getData(db, userId)
+
+	console.log(!db == false, userId, change, !data == false)
+
+	if (isNaN(change) || change % 1 != 0) {
+		console.warn(`${change} is not a valid input`)
+	}
+	else {
+		data.balance += change
+		if (data.balance < 0) data.balance = 0
+
+		console.debug(`Balance updated by ${change} to ${data.balance}`)
+	}
+
+	writeFile(db)
+	
+
+	return 
+
 }
